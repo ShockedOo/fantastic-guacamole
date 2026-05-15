@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Классификатор ОМЛ | WHO 2022 / ICC 2022</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-dark: #1a3a5c;
+      --blue: #1e5fa8;
+      --blue-light: #3b82f6;
+      --blue-bg: #eff6ff;
+      --green: #059669;
+      --green-bg: #ecfdf5;
+      --red: #dc2626;
+      --red-bg: #fef2f2;
+      --orange: #d97706;
+      --orange-bg: #fffbeb;
+      --gray-100: #f8fafc;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-500: #64748b;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+      --shadow: 0 2px 8px rgba(0,0,0,0.07);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      --radius: 10px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      color: var(--gray-900);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* ── HEADER ─────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #0f2942 0%, #1e5fa8 100%);
+      color: #fff;
+      padding: 20px 40px 18px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+    .header-icon { font-size: 2rem; }
+    header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.3px; }
+    header p { font-size: 0.8rem; opacity: 0.75; margin-top: 2px; }
+    .header-badge {
+      margin-left: auto; display: flex; gap: 8px; flex-shrink: 0;
+    }
+    .badge {
+      font-size: 0.72rem; font-weight: 700; padding: 4px 9px;
+      border-radius: 20px; letter-spacing: 0.3px;
+    }
+    .badge-who { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    .badge-icc { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.85); border: 1px solid rgba(255,255,255,0.2); }
+
+    /* ── LAYOUT ─────────────────────────────────── */
+    .container { max-width: 980px; margin: 28px auto 60px; padding: 0 20px; }
+
+    /* ── CARDS ──────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+    }
+    .card-title {
+      font-size: 1rem; font-weight: 700; color: var(--blue-dark);
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 2px solid var(--gray-200);
+      display: flex; align-items: center; gap: 9px;
+    }
+    .card-title .icon { font-size: 1.1rem; }
+    .section-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--blue); color: #fff;
+      font-size: 0.75rem; font-weight: 800; flex-shrink: 0;
+    }
+
+    /* ── FORM ELEMENTS ──────────────────────────── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block; font-size: 0.84rem; font-weight: 600;
+      color: var(--gray-700); margin-bottom: 5px;
+    }
+    .form-group input[type="number"],
+    .form-group select {
+      width: 100%; padding: 9px 12px;
+      border: 1.5px solid var(--gray-300); border-radius: 7px;
+      font-size: 0.9rem; color: var(--gray-900);
+      background: #fff; transition: border-color 0.15s;
+      appearance: auto;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none; border-color: var(--blue-light);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .hint { font-size: 0.76rem; color: var(--gray-500); margin-top: 4px; }
+
+    /* ── CHECKBOX ITEMS ─────────────────────────── */
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 8px;
+    }
+    .checkbox-grid.wide { grid-template-columns: 1fr 1fr; }
+    .checkbox-grid.narrow { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+
+    .cb-item {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 10px 12px; border: 1.5px solid var(--gray-200);
+      border-radius: 8px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .cb-item:hover { border-color: var(--blue-light); background: #f0f7ff; }
+    .cb-item.checked { border-color: var(--blue); background: #e8f2fc; }
+    .cb-item.checked-red { border-color: var(--red); background: var(--red-bg); }
+    .cb-item.checked-orange { border-color: var(--orange); background: var(--orange-bg); }
+
+    .cb-item input[type="checkbox"] {
+      width: 16px; height: 16px; margin-top: 2px;
+      accent-color: var(--blue); flex-shrink: 0;
+    }
+    .cb-label { font-size: 0.86rem; line-height: 1.35; }
+    .cb-main { font-weight: 600; color: var(--gray-700); }
+    .cb-sub { font-size: 0.76rem; color: var(--gray-500); margin-top: 1px; }
+    .cb-gene { font-size: 0.78rem; color: var(--blue); font-family: monospace; font-weight: 700; background: #dbeafe; padding: 1px 5px; border-radius: 4px; margin-top: 2px; display: inline-block; }
+
+    /* Priority tags */
+    .tag {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+      letter-spacing: 0.3px; vertical-align: middle;
+    }
+    .tag-apl { background: #fde8e8; color: #b91c1c; }
+    .tag-cbf { background: #d1fae5; color: #065f46; }
+    .tag-mol { background: #e0e7ff; color: #3730a3; }
+    .tag-ther { background: #fef3c7; color: #92400e; }
+
+    /* ── ALERTS ─────────────────────────────────── */
+    .alert {
+      padding: 11px 15px; border-radius: 8px;
+      font-size: 0.85rem; margin-bottom: 16px;
+      display: flex; gap: 9px; align-items: flex-start;
+    }
+    .alert .al-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: -1px; }
+    .alert-info { background: var(--blue-bg); border-left: 4px solid var(--blue-light); color: #1e40af; }
+    .alert-warn { background: var(--orange-bg); border-left: 4px solid var(--orange); color: #92400e; }
+    .alert-danger { background: var(--red-bg); border-left: 4px solid var(--red); color: #991b1b; }
+    .alert-success { background: var(--green-bg); border-left: 4px solid var(--green); color: #065f46; }
+
+    /* ── SEPARATOR ──────────────────────────────── */
+    .sub-section { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--gray-200); }
+    .sub-title { font-size: 0.88rem; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; }
+
+    /* ── BUTTONS ────────────────────────────────── */
+    .btn-row { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; flex-wrap: wrap; }
+    .btn {
+      padding: 11px 28px; border: none; border-radius: 8px;
+      font-size: 0.92rem; font-weight: 600; cursor: pointer;
+      transition: all 0.18s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #1a5080; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(30,95,168,0.35); }
+    .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+    .btn-secondary:hover { background: var(--gray-300); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-danger:hover { background: #b91c1c; }
+
+    /* ── RESULT ─────────────────────────────────── */
+    #result-section { display: none; }
+    #result-section.show { display: block; }
+
+    .result-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 28px 30px;
+      box-shadow: var(--shadow-lg);
+      border: 2px solid var(--blue);
+    }
+    .result-card.result-apl { border-color: var(--red); }
+    .result-card.result-cbf { border-color: var(--green); }
+    .result-card.result-nos { border-color: var(--gray-500); }
+    .result-card.result-mds { border-color: var(--orange); }
+
+    .result-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 2px solid var(--gray-200);
+    }
+    .result-icon { font-size: 2.2rem; }
+    .result-category { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.6; }
+    .result-title { font-size: 1.2rem; font-weight: 800; color: var(--blue-dark); margin-top: 2px; line-height: 1.3; }
+
+    .diagnosis-block {
+      background: var(--gray-100); border: 1.5px solid var(--gray-200);
+      border-radius: 8px; padding: 16px 18px; margin-bottom: 14px;
+    }
+    .diagnosis-block .db-header {
+      font-size: 0.76rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--gray-500); margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .diagnosis-block .db-text {
+      font-size: 1rem; font-weight: 700; color: var(--gray-900);
+      line-height: 1.45;
+    }
+    .diagnosis-block.who-block { border-left: 4px solid var(--blue); }
+    .diagnosis-block.icc-block { border-left: 4px solid #7c3aed; }
+    .diagnosis-block.full-block { border-left: 4px solid var(--green); background: var(--green-bg); }
+    .diagnosis-block.apl-block { border-left: 4px solid var(--red); background: var(--red-bg); }
+
+    .qualifiers-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
+    }
+    .qual-tag {
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .qual-therapy { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .qual-germline { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+    .qual-secondary { background: #fce7f3; color: #9d174d; border: 1px solid #fbcfe8; }
+
+    .notes-list { list-style: none; }
+    .notes-list li {
+      padding: 8px 12px; font-size: 0.85rem;
+      border-radius: 6px; margin-bottom: 6px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .notes-list li.note-warn { background: var(--orange-bg); color: #92400e; }
+    .notes-list li.note-info { background: var(--blue-bg); color: #1e40af; }
+    .notes-list li.note-danger { background: var(--red-bg); color: #991b1b; }
+    .notes-list li.note-success { background: var(--green-bg); color: #065f46; }
+    .notes-list .note-icon { flex-shrink: 0; }
+
+    .copy-btn {
+      font-size: 0.82rem; padding: 7px 14px; background: var(--gray-200);
+      color: var(--gray-700); border: none; border-radius: 6px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .copy-btn:hover { background: var(--gray-300); }
+
+    /* ── COLLAPSIBLE ────────────────────────────── */
+    .collapse-toggle {
+      background: none; border: none; cursor: pointer;
+      color: var(--blue); font-size: 0.84rem; font-weight: 600;
+      padding: 0; display: flex; align-items: center; gap: 5px;
+      margin-top: 10px;
+    }
+    .collapse-content { display: none; margin-top: 12px; }
+    .collapse-content.open { display: block; }
+
+    /* ── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 680px) {
+      header { padding: 14px 16px; }
+      .container { padding: 0 12px; margin-top: 16px; }
+      .card { padding: 18px 16px; }
+      .form-row, .form-row.cols-3 { grid-template-columns: 1fr; }
+      .checkbox-grid, .checkbox-grid.wide { grid-template-columns: 1fr; }
+      .header-badge { display: none; }
+      .btn { padding: 10px 18px; font-size: 0.88rem; }
+    }
+
+    /* Print */
+    @media print {
+      header, .form-section, .btn-row { display: none !important; }
+      #result-section { display: block !important; }
+      body { background: #fff; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-icon">🔬</div>
+    <div>
+      <h1>Классификация острого миелоидного лейкоза</h1>
+      <p>Диагностический инструмент для гематологов и онкологов</p>
+    </div>
+    <div class="header-badge">
+      <span class="badge badge-who">WHO 2022</span>
+      <span class="badge badge-icc">ICC 2022</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── INTRO ─────────────────────────────────── -->
+  <div class="alert alert-info" style="margin-bottom:20px">
+    <span class="al-icon">ℹ️</span>
+    <div>Заполните все разделы последовательно. Классификация выполняется в соответствии с <strong>классификацией ВОЗ 5-го издания (2022)</strong> и <strong>Международным консенсусом (ICC 2022)</strong>. Для постановки диагноза ОМЛ необходимо ≥20% бластов в КМ или ПК (исключения — при наличии определяющих генетических аномалий).</div>
+  </div>
+
+  <div id="form-section">
+
+  <!-- ═══════════════════════════════════════════
+       РАЗДЕЛ 1 — ОБЩИЕ ДАННЫЕ
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">1</span>
+      <span class="icon">📋</span>
+      Общие клинические данные
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="blasts_bm">Бласты в костном мозге (%)</label>
+        <input type="number" id="blasts_bm" min="0" max="100" placeholder="0–100" />
+        <div class="hint">Миелобласты + монобласты + промоноциты + мегакариобласты (в зависимости от варианта)</div>
+      </div>
+      <div class="form-group">
+        <label for="blasts_pb">Бласты в периферической крови (%)</label>
+        <input type="number" id="blasts_pb" min="0" max="100" placeholder="0–100" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="age">Возраст пациента (лет)</label>
+        <input type="number" id="age" min="0" max="120" placeholder="лет" />
+      </div>
+      <div class="form-group">
+        <label for="de_novo">Вариант развития заболевания</label>
+        <select id="de_novo">
+          <option value="">— выберите —</option>
+          <option value="denovo">Первичный (de novo)</option>
+          <option value="secondary">Вторичный (после МДС / МДС/МПН)</option>
+          <option value="therapy">Связанный с терапией (t-AML)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Therapy-related subfields -->
+    <div id="therapy-block" style="display:none">
+      <div class="alert alert-warn">
+        <span class="al-icon">⚠️</span>
+        <div><strong>Связанный с терапией ОМЛ (t-AML):</strong> В классификации WHO 2022 t-AML не является отдельной категорией, а добавляется как квалификатор <em>«связанный с терапией»</em> к соответствующей генетической категории. Укажите тип предшествующей терапии:</div>
+      </div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_alkyl">
+          <input type="checkbox" data-id="priorAlkyl" />
+          <div class="cb-label">
+            <div class="cb-main">Алкилирующие агенты</div>
+            <div class="cb-sub">Циклофосфамид, мелфалан, хлорамбуцил, кармустин и др.</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_topo2">
+          <input type="checkbox" data-id="priorTopo2" />
+          <div class="cb-label">
+            <div class="cb-main">Ингибиторы топоизомеразы II</div>
+            <div class="cb-sub">Этопозид, доксорубицин, митоксантрон и др. → часто KMT2A-r</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_radiation">
+          <input type="checkbox" data-id="priorRadiation" />
+          <div class="cb-label">
+            <div class="cb-main">Лучевая терапия</div>
+            <div class="cb-sub">Облучение области кроветворения</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_parp">
+          <input type="checkbox" data-id="priorPARP" />
+          <div class="cb-label">
+            <div class="cb-main">PARP-ингибиторы</div>
+            <div class="cb-sub">Олапариб, нирапариб, рукапариб и др.</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Secondary AML subfields -->
+    <div id="secondary-block" style="display:none">
+      <div class="alert alert-info">
+        <span class="al-icon">ℹ️</span>
+        <div>Трансформация из МДС или МДС/МПН является самостоятельным квалификатором в WHO 2022 для категории «ОМЛ, связанный с МДС». Укажите предшествующий диагноз:</div>
+      </div>
+      <div class="form-group">
+        <label for="prior_diag">Предшествующий диагноз</label>
+        <select id="prior_diag">
+          <option value="">— выберите —</option>
+          <option value="mds">МДС (миелодиспластический синдром)</option>
+          <option value="mds_mpn">МДС/МПН (перекрёстный синдром)</option>
+          <option value="cmml">ХММЛ (хронический миеломоноцитарный лейкоз)</option>
+          <option value="mds_rs_sf3b1">МДС с мутацией SF3B1 (МДС-SF3B1)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Germline predisposition -->
+    <div class="sub-section">
+      <div class="sub-title">Герминальная предрасположенность</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_germ">
+          <input type="checkbox" data-id="germline" />
+          <div class="cb-label">
+            <div class="cb-main">Есть герминальная мутация</div>
+            <div class="cb-sub">RUNX1, CEBPA, DDX41, GATA2, ANKRD26, ETV6, SAMD9/9L, Down-синдром и др.</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_down">
+          <input type="checkbox" data-id="downSyndrome" />
+          <div class="cb-label">
+            <div class="cb-main">Синдром Дауна (трисомия 21)</div>
+            <div class="cb-sub">ОМЛ, связанный с синдромом Дауна — отдельная категория</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_germ_ddx41">
+          <input type="checkbox" data-id="germDDX41" />
+          <div class="cb-label">
+            <div class="cb-main">Герминальная мутация DDX41</div>
+            <div class="cb-sub">Выделена отдельно в WHO 2022</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       РАЗДЕЛ 2 — ЦИТОГЕНЕТИКА
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">2</span>
+      <span class="icon">🧬</span>
+      Цитогенетика и молекулярная генетика — специфические аномалии
+    </div>
+
+    <div class="alert alert-info">
+      <span class="al-icon">💡</span>
+      <div>Наличие <strong>определяющей генетической аномалии</strong> позволяет установить диагноз ОМЛ независимо от числа бластов (если ≥10%). Отметьте <u>все</u> выявленные аномалии — при наличии нескольких приоритет определится автоматически.</div>
+    </div>
+
+    <!-- APL -->
+    <div class="sub-section" style="padding-top:0; border:none; margin-top:0">
+      <div class="sub-title">🔴 Острый промиелоцитарный лейкоз (APL) — неотложный диагноз</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_pmlrara">
+          <input type="checkbox" data-id="pmlRara" />
+          <div class="cb-label">
+            <div class="cb-main">PML::RARA <span class="tag tag-apl">APL</span></div>
+            <div class="cb-gene">t(15;17)(q24.1;q21.2)</div>
+            <div class="cb-sub">Классическая транслокация; ATRA-чувствительный</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_rara_var">
+          <input type="checkbox" data-id="raraVariant" />
+          <div class="cb-label">
+            <div class="cb-main">Другие слияния с RARA <span class="tag tag-apl">APL</span></div>
+            <div class="cb-gene">ZBTB16::RARA, STAT5B::RARA, NPM1::RARA и др.</div>
+            <div class="cb-sub">Вариантные транслокации; чувствительность к ATRA — вариабельна</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- CBF -->
+    <div class="sub-section">
+      <div class="sub-title">🟢 Core-binding factor (CBF) — ОМЛ</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_runx1t1">
+          <input type="checkbox" data-id="runx1t1" />
+          <div class="cb-label">
+            <div class="cb-main">RUNX1::RUNX1T1 <span class="tag tag-cbf">CBF</span></div>
+            <div class="cb-gene">t(8;21)(q22;q22.1)</div>
+            <div class="cb-sub">Часто с нейтрофильной дифференцировкой; благоприятный прогноз</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_cbfb">
+          <input type="checkbox" data-id="cbfbMyh11" />
+          <div class="cb-label">
+            <div class="cb-main">CBFB::MYH11 <span class="tag tag-cbf">CBF</span></div>
+            <div class="cb-gene">inv(16)(p13.1q22) / t(16;16)(p13.1;q22)</div>
+            <div class="cb-sub">Часто с эозинофилами; благоприятный прогноз</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- KMT2A and other 11q23 -->
+    <div class="sub-section">
+      <div class="sub-title">Перестройки KMT2A (MLL) — 11q23.3</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_mllt3">
+          <input type="checkbox" data-id="kmt2a_mllt3" />
+          <div class="cb-label">
+            <div class="cb-main">MLLT3::KMT2A</div>
+            <div class="cb-gene">t(9;11)(p21.3;q23.3)</div>
+            <div class="cb-sub">Наиболее частая KMT2A-перестройка</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_kmt2a_other">
+          <input type="checkbox" data-id="kmt2aOther" />
+          <div class="cb-label">
+            <div class="cb-main">Другая перестройка KMT2A</div>
+            <div class="cb-gene">AFF1, MLLT1, MLLT10, ELL, AFDN и др.</div>
+            <div class="cb-sub">Любое слияние с геном KMT2A (кроме MLLT3)</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- MECOM, NUP98 -->
+    <div class="sub-section">
+      <div class="sub-title">Перестройки MECOM (3q26), NUP98</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_mecom">
+          <input type="checkbox" data-id="mecom" />
+          <div class="cb-label">
+            <div class="cb-main">Перестройка MECOM (EVI1)</div>
+            <div class="cb-gene">inv(3)(q21.3q26.2) / t(3;3)(q21.3;q26.2) / другие</div>
+            <div class="cb-sub">Неблагоприятный прогноз; часто −7</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_nup98">
+          <input type="checkbox" data-id="nup98" />
+          <div class="cb-label">
+            <div class="cb-main">Перестройка NUP98</div>
+            <div class="cb-gene">NUP98::NSD1, NUP98::KDM5A и др. (11p15)</div>
+            <div class="cb-sub">Неблагоприятный прогноз; особенно у детей</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- DEK, RBM15, BCR-ABL -->
+    <div class="sub-section">
+      <div class="sub-title">Другие определяющие транслокации</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_dek">
+          <input type="checkbox" data-id="dekNup214" />
+          <div class="cb-label">
+            <div class="cb-main">DEK::NUP214</div>
+            <div class="cb-gene">t(6;9)(p22.3;q34.1)</div>
+            <div class="cb-sub">Часто с базофилией; неблагоприятный прогноз</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_rbm15">
+          <input type="checkbox" data-id="rbm15" />
+          <div class="cb-label">
+            <div class="cb-main">RBM15::MRTFA</div>
+            <div class="cb-gene">t(1;22)(p13.3;q13.1)</div>
+            <div class="cb-sub">ОМЛ с мегакариобластной дифференцировкой; преимущественно у детей</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_bcrv">
+          <input type="checkbox" data-id="bcrAbl" />
+          <div class="cb-label">
+            <div class="cb-main">BCR::ABL1</div>
+            <div class="cb-gene">t(9;22)(q34.1;q11.2)</div>
+            <div class="cb-sub">Исключить бластный криз ХМЛ; ИТК-чувствительный</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Rare recurrent -->
+    <div class="sub-section">
+      <div class="sub-title">Другие рекуррентные транслокации</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_etv6_mnx1">
+          <input type="checkbox" data-id="etv6mnx1" />
+          <div class="cb-label">
+            <div class="cb-main">ETV6::MNX1</div>
+            <div class="cb-gene">t(7;12)(q36;p13)</div>
+            <div class="cb-sub">Педиатрический ОМЛ, грудной возраст</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_picalm">
+          <input type="checkbox" data-id="picalmMllt10" />
+          <div class="cb-label">
+            <div class="cb-main">PICALM::MLLT10</div>
+            <div class="cb-gene">t(10;11)(p12;q23)</div>
+            <div class="cb-sub">Часто с моноцитарной дифференцировкой</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_npm1_mlf1">
+          <input type="checkbox" data-id="npm1mlf1" />
+          <div class="cb-label">
+            <div class="cb-main">NPM1::MLF1</div>
+            <div class="cb-gene">t(3;5)(q25;q35)</div>
+            <div class="cb-sub">Редкая транслокация; промежуточный прогноз</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Molecular -->
+    <div class="sub-section">
+      <div class="sub-title">🔵 Определяющие молекулярные мутации</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_npm1">
+          <input type="checkbox" data-id="npm1mut" />
+          <div class="cb-label">
+            <div class="cb-main">Мутация NPM1 <span class="tag tag-mol">Молекулярный</span></div>
+            <div class="cb-sub">Наиболее частая мутация при ОМЛ; благоприятный прогноз (без FLT3-ITD)</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_cebpa">
+          <input type="checkbox" data-id="cebpaBzip" />
+          <div class="cb-label">
+            <div class="cb-main">Мутация CEBPA — in-frame bZIP-домен <span class="tag tag-mol">Молекулярный</span></div>
+            <div class="cb-sub">Bi-allelic или моноаллельная в bZIP-домене; благоприятный прогноз</div>
+          </div>
+        </label>
+      </div>
+      <div class="alert alert-warn" style="margin-top:12px">
+        <span class="al-icon">⚠️</span>
+        <div>В WHO 2022: <strong>только мутации CEBPA в bZIP-домене</strong> (а не все биаллельные CEBPA) являются определяющей аномалией. Прочие биаллельные CEBPA без bZIP — классифицируются в ОМЛ БДУ.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       РАЗДЕЛ 3 — МДС-АССОЦИИРОВАННЫЕ ПРИЗНАКИ
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">3</span>
+      <span class="icon">🔍</span>
+      МДС-ассоциированные признаки (при отсутствии определяющих генетических аномалий)
+    </div>
+    <div class="alert alert-info">
+      <span class="al-icon">ℹ️</span>
+      <div>Категория <strong>«ОМЛ, связанный с МДС» (AML-MR)</strong> устанавливается при отсутствии определяющих генетических аномалий и наличии хотя бы одного из нижеперечисленных критериев (WHO 2022). МДС-ассоциированные мутации учитываются только при соматическом происхождении.</div>
+    </div>
+
+    <!-- MDS-related cytogenetics -->
+    <div class="sub-title">МДС-ассоциированные цитогенетические аномалии</div>
+    <div class="checkbox-grid">
+      <label class="cb-item" id="cb_complex">
+        <input type="checkbox" data-id="complexKaryo" />
+        <div class="cb-label">
+          <div class="cb-main">Сложный кариотип</div>
+          <div class="cb-sub">≥3 несвязанных хромосомных аномалий (без CBF, APL)</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_del5q">
+        <input type="checkbox" data-id="del5q" />
+        <div class="cb-label">
+          <div class="cb-main">del(5q) / t(5q) / add(5q)</div>
+          <div class="cb-sub">Изолированная или в составе других аномалий</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_7">
+        <input type="checkbox" data-id="mono7_del7q" />
+        <div class="cb-label">
+          <div class="cb-main">−7 / del(7q)</div>
+          <div class="cb-sub">Моносомия 7 или делеция 7q</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_del11q">
+        <input type="checkbox" data-id="del11q" />
+        <div class="cb-label">
+          <div class="cb-main">del(11q)</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_del12p">
+        <input type="checkbox" data-id="del12p" />
+        <div class="cb-label">
+          <div class="cb-main">del(12p) / t(12p)</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_del13q">
+        <input type="checkbox" data-id="del13q" />
+        <div class="cb-label">
+          <div class="cb-main">del(13q)</div>
+          <div class="cb-sub">Изолированная</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_del17p">
+        <input type="checkbox" data-id="del17p" />
+        <div class="cb-label">
+          <div class="cb-main">del(17p) / t(17p)</div>
+          <div class="cb-sub">Нередко с TP53-мутацией</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_iso17q">
+        <input type="checkbox" data-id="iso17q" />
+        <div class="cb-label">
+          <div class="cb-main">i(17q) — изохромосома 17q</div>
+        </div>
+      </label>
+      <label class="cb-item" id="cb_idic_x">
+        <input type="checkbox" data-id="idicXq13" />
+        <div class="cb-label">
+          <div class="cb-main">idic(X)(q13)</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- MDS-related mutations -->
+    <div class="sub-section">
+      <div class="sub-title">МДС-ассоциированные соматические мутации</div>
+      <div class="checkbox-grid narrow">
+        <label class="cb-item" id="cb_srsf2">
+          <input type="checkbox" data-id="mut_SRSF2" />
+          <div class="cb-label"><div class="cb-main">SRSF2</div><div class="cb-sub">Сплайсосомная мутация</div></div>
+        </label>
+        <label class="cb-item" id="cb_sf3b1">
+          <input type="checkbox" data-id="mut_SF3B1" />
+          <div class="cb-label"><div class="cb-main">SF3B1</div><div class="cb-sub">Кольцевые сидеробласты</div></div>
+        </label>
+        <label class="cb-item" id="cb_u2af1">
+          <input type="checkbox" data-id="mut_U2AF1" />
+          <div class="cb-label"><div class="cb-main">U2AF1</div></div>
+        </label>
+        <label class="cb-item" id="cb_zrsr2">
+          <input type="checkbox" data-id="mut_ZRSR2" />
+          <div class="cb-label"><div class="cb-main">ZRSR2</div></div>
+        </label>
+        <label class="cb-item" id="cb_asxl1">
+          <input type="checkbox" data-id="mut_ASXL1" />
+          <div class="cb-label"><div class="cb-main">ASXL1</div><div class="cb-sub">Эпигенетический регулятор</div></div>
+        </label>
+        <label class="cb-item" id="cb_ezh2">
+          <input type="checkbox" data-id="mut_EZH2" />
+          <div class="cb-label"><div class="cb-main">EZH2</div></div>
+        </label>
+        <label class="cb-item" id="cb_bcor">
+          <input type="checkbox" data-id="mut_BCOR" />
+          <div class="cb-label"><div class="cb-main">BCOR</div></div>
+        </label>
+        <label class="cb-item" id="cb_stag2">
+          <input type="checkbox" data-id="mut_STAG2" />
+          <div class="cb-label"><div class="cb-main">STAG2</div><div class="cb-sub">Когезиновый комплекс</div></div>
+        </label>
+        <label class="cb-item" id="cb_runx1_som">
+          <input type="checkbox" data-id="mut_RUNX1" />
+          <div class="cb-label"><div class="cb-main">RUNX1 (соматическая)</div><div class="cb-sub">Не герминальная</div></div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Dysplasia -->
+    <div class="sub-section">
+      <div class="sub-title">Признаки миелодисплазии</div>
+      <div class="alert alert-info" style="font-size:0.83rem">
+        <span class="al-icon">📌</span>
+        <div>В WHO 2022 сама по себе морфологическая дисплазия <strong>не является</strong> критерием AML-MR — важны цитогенетика, мутации и анамнез. Тем не менее укажите, если дисплазия выражена.</div>
+      </div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_dysplasia">
+          <input type="checkbox" data-id="multilineageDysplasia" />
+          <div class="cb-label">
+            <div class="cb-main">Мультилинейная дисплазия</div>
+            <div class="cb-sub">≥50% клеток в ≥2 линиях с признаками дисплазии</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_rs">
+          <input type="checkbox" data-id="ringSideroblasts" />
+          <div class="cb-label">
+            <div class="cb-main">Кольцевые сидеробласты</div>
+            <div class="cb-sub">≥15% эритробластов</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       РАЗДЕЛ 4 — ОМЛ БДУ (морфология / FAB)
+  ══════════════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-title">
+      <span class="section-num">4</span>
+      <span class="icon">🔬</span>
+      Иммунофенотип и морфология (для категории «ОМЛ БДУ»)
+    </div>
+    <div class="alert alert-info">
+      <span class="al-icon">ℹ️</span>
+      <div>Раздел актуален только при отсутствии определяющих генетических аномалий и МДС-ассоциированных признаков. Данные иммунофенотипирования и морфологии позволяют уточнить вариант в категории <strong>ОМЛ БДУ</strong> (WHO 2022) / <strong>AML, NOS</strong> (ICC 2022).</div>
+    </div>
+
+    <div class="form-group">
+      <label for="fab_variant">Вариант по иммунофенотипированию / цитохимии (FAB)</label>
+      <select id="fab_variant">
+        <option value="">— выберите вариант —</option>
+        <option value="M0">M0 — ОМЛ с минимальной дифференцировкой (MPO−, CD13/CD33+, CD34+, TdT±)</option>
+        <option value="M1">M1 — ОМЛ без созревания (MPO+ ≥3%, нет гранулоцитарного созревания)</option>
+        <option value="M2">M2 — ОМЛ с созреванием (MPO+, нейтрофильное созревание ≥10%)</option>
+        <option value="M4">M4 — Острый миеломоноцитарный лейкоз (миелобласты + монобласты/промоноциты ≥20%)</option>
+        <option value="M4eo">M4eo — ОМЛ с эозинофилией (без inv16/CBF → уточнить)</option>
+        <option value="M5a">M5a — Острый монобластный лейкоз (монобласты ≥80% среди моноцитарных)</option>
+        <option value="M5b">M5b — Острый моноцитарный лейкоз (промоноциты преобладают)</option>
+        <option value="M6_erythroid">M6 — Чистый эритроидный лейкоз (≥80% эритроидных, ≥30% проэритробластов)</option>
+        <option value="M7">M7 — Острый мегакариобластный лейкоз (CD41/CD61+, CD42+)</option>
+        <option value="M_baso">Острый базофильный лейкоз (CD203c+, гранулы базофилов)</option>
+        <option value="M_pan">Острый панмиелоз с миелофиброзом</option>
+        <option value="sarcoma">Миелоидная саркома</option>
+      </select>
+    </div>
+
+    <!-- Additional molecular markers for prognosis -->
+    <div class="sub-section">
+      <div class="sub-title">Дополнительные молекулярные маркеры (прогноз, таргетная терапия)</div>
+      <div class="checkbox-grid">
+        <label class="cb-item" id="cb_flt3itd">
+          <input type="checkbox" data-id="flt3itd" />
+          <div class="cb-label">
+            <div class="cb-main">FLT3-ITD</div>
+            <div class="cb-sub">Внутренняя тандемная дупликация; неблагоприятный прогноз, мидостаурин/гилтеритиниб</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_flt3tkd">
+          <input type="checkbox" data-id="flt3tkd" />
+          <div class="cb-label">
+            <div class="cb-main">FLT3-TKD (D835)</div>
+            <div class="cb-sub">Промежуточное значение</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_idh1">
+          <input type="checkbox" data-id="idh1" />
+          <div class="cb-label">
+            <div class="cb-main">IDH1 (R132)</div>
+            <div class="cb-sub">Таргетная терапия: ивосидениб</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_idh2">
+          <input type="checkbox" data-id="idh2" />
+          <div class="cb-label">
+            <div class="cb-main">IDH2 (R140/R172)</div>
+            <div class="cb-sub">Таргетная терапия: энасидениб</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_tp53">
+          <input type="checkbox" data-id="tp53" />
+          <div class="cb-label">
+            <div class="cb-main">TP53 (мутация)</div>
+            <div class="cb-sub">Неблагоприятный прогноз; у-монал/децитабин</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_kit">
+          <input type="checkbox" data-id="ckit" />
+          <div class="cb-label">
+            <div class="cb-main">KIT (D816V и др.)</div>
+            <div class="cb-sub">При CBF-ОМЛ; нейтрализует благоприятный прогноз</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_dnmt3a">
+          <input type="checkbox" data-id="dnmt3a" />
+          <div class="cb-label">
+            <div class="cb-main">DNMT3A</div>
+            <div class="cb-sub">Эпигенетический; промежуточный прогноз</div>
+          </div>
+        </label>
+        <label class="cb-item" id="cb_tet2">
+          <input type="checkbox" data-id="tet2" />
+          <div class="cb-label">
+            <div class="cb-main">TET2</div>
+            <div class="cb-sub">Может быть CHIP; учитывать контекст</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── КНОПКА ─────────────────────────────────── -->
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="resetForm()">↺ Сбросить</button>
+    <button class="btn btn-primary" onclick="classify()">⚡ Классифицировать</button>
+  </div>
+
+  </div><!-- /form-section -->
+
+  <!-- ═══════════════════════════════════════════
+       РЕЗУЛЬТАТ
+  ══════════════════════════════════════════════ -->
+  <div id="result-section">
+    <div id="result-card" class="result-card">
+
+      <div class="result-header">
+        <div id="result-icon" class="result-icon">🩸</div>
+        <div>
+          <div id="result-category" class="result-category">Диагноз</div>
+          <div id="result-title" class="result-title">—</div>
+        </div>
+      </div>
+
+      <div id="qualifiers-row" class="qualifiers-row"></div>
+
+      <div id="who-block" class="diagnosis-block who-block">
+        <div class="db-header">
+          <span>🌍</span> WHO 2022 — 5-е издание
+        </div>
+        <div id="who-text" class="db-text">—</div>
+      </div>
+
+      <div id="icc-block" class="diagnosis-block icc-block">
+        <div class="db-header">
+          <span>📋</span> ICC 2022 (Международный консенсус)
+        </div>
+        <div id="icc-text" class="db-text">—</div>
+      </div>
+
+      <div id="full-diagnosis-block" class="diagnosis-block full-block">
+        <div class="db-header">
+          <span>📝</span> Полная формулировка диагноза
+        </div>
+        <div id="full-text" class="db-text" style="font-size:1.05rem">—</div>
+        <div style="margin-top:10px">
+          <button class="copy-btn" onclick="copyDiagnosis()">📋 Копировать формулировку</button>
+        </div>
+      </div>
+
+      <div id="apl-alert" style="display:none" class="alert alert-danger">
+        <span class="al-icon">🚨</span>
+        <div><strong>НЕОТЛОЖНАЯ СИТУАЦИЯ — ОПЛ (APL)!</strong> Немедленно начать <strong>ATRA ± АТО</strong> до получения результатов цитогенетики при подозрении на ОПЛ! Высокий риск ДВС-синдрома.</div>
+      </div>
+
+      <div id="notes-block" style="margin-top:16px">
+        <ul id="notes-list" class="notes-list"></ul>
+      </div>
+
+      <!-- Прогностическая группа -->
+      <div id="prognosis-block" class="diagnosis-block" style="margin-top:14px; border-left: 4px solid #64748b">
+        <div class="db-header"><span>📊</span> Прогностическая группа риска (ELN 2022)</div>
+        <div id="prognosis-text" class="db-text">—</div>
+      </div>
+
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="backToForm()">← Изменить параметры</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨 Распечатать</button>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ─────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────
+const state = {};
+
+// ─────────────────────────────────────────────────────────
+// INIT — wire up all checkboxes
+// ─────────────────────────────────────────────────────────
+document.querySelectorAll('.cb-item input[type="checkbox"]').forEach(cb => {
+  const id = cb.dataset.id;
+  const label = cb.closest('.cb-item');
+  cb.addEventListener('change', () => {
+    state[id] = cb.checked;
+    if (cb.checked) {
+      label.classList.add('checked');
+    } else {
+      label.classList.remove('checked');
+    }
+  });
+});
+
+// de_novo selector shows/hides therapy-block and secondary-block
+document.getElementById('de_novo').addEventListener('change', function() {
+  const v = this.value;
+  document.getElementById('therapy-block').style.display   = v === 'therapy'   ? 'block' : 'none';
+  document.getElementById('secondary-block').style.display = v === 'secondary' ? 'block' : 'none';
+  state.deNovo = v;
+});
+
+// ─────────────────────────────────────────────────────────
+// CLASSIFICATION ENGINE
+// ─────────────────────────────────────────────────────────
+function classify() {
+  // Collect numeric fields
+  state.blastsBM = parseFloat(document.getElementById('blasts_bm').value) || 0;
+  state.blastsPB = parseFloat(document.getElementById('blasts_pb').value) || 0;
+  state.age      = parseFloat(document.getElementById('age').value) || null;
+  state.deNovo   = document.getElementById('de_novo').value;
+  state.fabVariant = document.getElementById('fab_variant').value;
+
+  const maxBlasts = Math.max(state.blastsBM, state.blastsPB);
+
+  const notes = [];
+  let who2022   = '';
+  let icc2022   = '';
+  let category  = '';   // for card styling
+  let icon      = '🩸';
+  let progGroup = '';
+  let isAPL     = false;
+
+  // ── Qualifiers ──────────────────────────────
+  const qualifiers = [];
+  if (state.deNovo === 'therapy') qualifiers.push({ label: 'Связанный с терапией (t-AML)', cls: 'qual-therapy' });
+  if (state.deNovo === 'secondary') qualifiers.push({ label: 'Вторичный (после МДС/МДС/МПН)', cls: 'qual-secondary' });
+  if (state.germline || state.germDDX41) qualifiers.push({ label: 'Герминальная предрасположенность', cls: 'qual-germline' });
+  const therapyQual = state.deNovo === 'therapy' ? ', связанный с терапией' : '';
+
+  // ── Down syndrome ────────────────────────────
+  if (state.downSyndrome) {
+    who2022 = 'Острый миелоидный лейкоз, связанный с синдромом Дауна';
+    icc2022 = 'Myeloid leukaemia associated with Down syndrome';
+    category = 'cbf'; icon = '🧬';
+    progGroup = 'Благоприятная (в педиатрической практике)';
+    notes.push({ cls: 'note-info', icon: 'ℹ️', text: 'ОМЛ при синдроме Дауна — отдельная клинико-биологическая единица с характерными мутациями GATA1. Специфический протокол лечения.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── APL — highest priority ───────────────────
+  if (state.pmlRara) {
+    isAPL = true;
+    who2022 = `Острый промиелоцитарный лейкоз с PML::RARA${therapyQual}`;
+    icc2022 = `APL with t(15;17)(q24.1;q21.2)/PML::RARA${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'apl'; icon = '🚨';
+    progGroup = 'Благоприятная — при раннем начале ATRA+АТО. Высокий ранний риск летальности от ДВС.';
+    notes.push({ cls: 'note-danger', icon: '🚨', text: 'НЕОТЛОЖНО: начало ATRA показано при малейшем клиническом подозрении на ОПЛ. Нельзя ждать цитогенетики!' });
+    notes.push({ cls: 'note-info', icon: '💊', text: 'Стандарт: ATRA + АТО (триоксид мышьяка) — для низкого/промежуточного риска. ATRA + АТО + ИДА — для высокого риска.' });
+    notes.push({ cls: 'note-info', icon: '🔬', text: 'Контроль МОБ методом ПЦР-РВ (PML::RARA) после каждого курса. Диагноз возможен при любом числе бластов.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup, isAPL });
+    return;
+  }
+
+  if (state.raraVariant) {
+    isAPL = true;
+    who2022 = `Острый промиелоцитарный лейкоз с другим слиянием с RARA${therapyQual}`;
+    icc2022 = `APL with variant RARA fusion${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'apl'; icon = '🚨';
+    progGroup = 'Зависит от партнёра RARA; часть вариантов ATRA-резистентна';
+    notes.push({ cls: 'note-danger', icon: '⚠️', text: 'Вариантные слияния с RARA (ZBTB16, STAT5B, NPM1, PRKAR1A и др.) могут быть ATRA-резистентными. Необходима молекулярная идентификация партнёра.' });
+    notes.push({ cls: 'note-warn', icon: '💊', text: 'До идентификации партнёра RARA — осторожность с ATRA. Рассмотреть АТО.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup, isAPL });
+    return;
+  }
+
+  // ── CBF AML ─────────────────────────────────
+  if (state.runx1t1) {
+    who2022 = `ОМЛ с t(8;21)(q22;q22.1)/RUNX1::RUNX1T1${therapyQual}`;
+    icc2022 = `AML with t(8;21)(q22;q22.1)/RUNX1::RUNX1T1${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'cbf'; icon = '🧬';
+    progGroup = 'Благоприятная (ELN 2022)';
+    notes.push({ cls: 'note-success', icon: '✅', text: 'CBF-ОМЛ: диагноз правомерен при ≥10% бластов. Высокодозный цитарабин (ВДЦтАр) в консолидации × 3–4 курса.' });
+    if (state.ckit) notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Мутация KIT нейтрализует благоприятный прогноз CBF-ОМЛ → рассмотреть добавление иматиниба/дасатиниба.' });
+    if (state.flt3itd) notes.push({ cls: 'note-warn', icon: '⚠️', text: 'FLT3-ITD при CBF-ОМЛ: переводит в промежуточную группу риска.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  if (state.cbfbMyh11) {
+    who2022 = `ОМЛ с inv(16)(p13.1q22)/CBFB::MYH11${therapyQual}`;
+    icc2022 = `AML with inv(16)(p13.1q22) or t(16;16)(p13.1;q22)/CBFB::MYH11${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'cbf'; icon = '🧬';
+    progGroup = 'Благоприятная (ELN 2022)';
+    notes.push({ cls: 'note-success', icon: '✅', text: 'CBF-ОМЛ с inv(16): диагноз правомерен при ≥10% бластов. Эозинофилия в костном мозге характерна. Схема лечения — ВДЦтАр-консолидация.' });
+    if (state.ckit) notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Мутация KIT ухудшает прогноз CBF-ОМЛ.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── BCR::ABL1 ────────────────────────────────
+  if (state.bcrAbl) {
+    who2022 = `ОМЛ с BCR::ABL1${therapyQual}`;
+    icc2022 = `AML with BCR::ABL1${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Неблагоприятная — без ИТК; возможно улучшение при добавлении ИТК';
+    notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Необходимо исключить Ph+ ХМЛ в бластном кризе (анамнез, трепанобиопсия, предшествующий ОАК). При de novo — добавление ИТК (дазатиниб/понатиниб) к ХТ.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── KMT2A ───────────────────────────────────
+  if (state.kmt2a_mllt3) {
+    who2022 = `ОМЛ с t(9;11)(p21.3;q23.3)/MLLT3::KMT2A${therapyQual}`;
+    icc2022 = `AML with t(9;11)(p21.3;q23.3)/MLLT3::KMT2A${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Промежуточная (ELN 2022)';
+    notes.push({ cls: 'note-info', icon: '💊', text: 'Часто моноцитарный иммунофенотип. Рассмотреть ингибитор MENIN (иворасидениб) в клинических исследованиях.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  if (state.kmt2aOther) {
+    who2022 = `ОМЛ с перестройкой KMT2A${therapyQual}`;
+    icc2022 = `AML with KMT2A rearrangement${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Промежуточная–неблагоприятная (зависит от партнёра)';
+    notes.push({ cls: 'note-info', icon: '🔬', text: 'Уточнить партнёра перестройки KMT2A для точного прогноза. Ингибиторы MENIN — в клинических исследованиях.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── MECOM ───────────────────────────────────
+  if (state.mecom) {
+    who2022 = `ОМЛ с перестройкой MECOM${therapyQual}`;
+    icc2022 = `AML with MECOM rearrangement${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Неблагоприятная (ELN 2022)';
+    notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Перестройка MECOM (EVI1): нередко сочетается с −7. Крайне неблагоприятный прогноз. Рекомендована алло-ТГСК в ремиссии.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── NUP98 ───────────────────────────────────
+  if (state.nup98) {
+    who2022 = `ОМЛ с перестройкой NUP98${therapyQual}`;
+    icc2022 = `AML with NUP98 rearrangement${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Неблагоприятная';
+    notes.push({ cls: 'note-warn', icon: '⚠️', text: 'NUP98::NSD1 — наиболее частый вариант; часто сочетается с FLT3-ITD. Неблагоприятный прогноз, особенно у детей.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── DEK::NUP214 ─────────────────────────────
+  if (state.dekNup214) {
+    who2022 = `ОМЛ с t(6;9)(p22.3;q34.1)/DEK::NUP214${therapyQual}`;
+    icc2022 = `AML with t(6;9)(p22.3;q34.1)/DEK::NUP214${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Неблагоприятная (ELN 2022)';
+    notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Базофилия в КМ характерна. Часто FLT3-ITD (в ~70%). Неблагоприятный прогноз. Рекомендована алло-ТГСК.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── RBM15::MRTFA ────────────────────────────
+  if (state.rbm15) {
+    who2022 = `ОМЛ с t(1;22)(p13.3;q13.1)/RBM15::MRTFA${therapyQual}`;
+    icc2022 = `AML with t(1;22)(p13.3;q13.1)/RBM15::MRTFA${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Промежуточная (у детей, без синдрома Дауна)';
+    notes.push({ cls: 'note-info', icon: '🧒', text: 'Преимущественно у детей грудного и раннего возраста. Мегакариобластная дифференцировка. Исключить синдром Дауна.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── Rare recurrent ──────────────────────────
+  if (state.etv6mnx1) {
+    who2022 = `ОМЛ с t(7;12)(q36;p13)/ETV6::MNX1${therapyQual}`;
+    icc2022 = `AML with t(7;12)(q36;p13)/ETV6::MNX1${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Неблагоприятная';
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  if (state.picalmMllt10) {
+    who2022 = `ОМЛ с t(10;11)(p12;q23)/PICALM::MLLT10${therapyQual}`;
+    icc2022 = `AML with t(10;11)(p12;q23)/PICALM::MLLT10${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Промежуточная–неблагоприятная';
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  if (state.npm1mlf1) {
+    who2022 = `ОМЛ с t(3;5)(q25;q35)/NPM1::MLF1${therapyQual}`;
+    icc2022 = `AML with t(3;5)(q25;q35)/NPM1::MLF1${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Промежуточная';
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── NPM1 mutation ───────────────────────────
+  if (state.npm1mut) {
+    who2022 = `ОМЛ с мутацией NPM1${therapyQual}`;
+    icc2022 = `AML with mutated NPM1${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    if (state.flt3itd) {
+      progGroup = 'Промежуточная (ELN 2022) — NPM1 + FLT3-ITD (высокий allelic ratio) → неблагоприятная';
+      notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Сочетание NPM1 + FLT3-ITD: прогноз зависит от allelic ratio FLT3-ITD. Добавить мидостаурин к ХТ. При высоком AR — рассмотреть алло-ТГСК.' });
+    } else {
+      progGroup = 'Благоприятная (ELN 2022) — NPM1 без FLT3-ITD или низкий AR';
+      notes.push({ cls: 'note-success', icon: '✅', text: 'NPM1-мутированный ОМЛ без FLT3-ITD — благоприятный прогноз. МОБ-мониторинг по NPM1 методом ПЦР-РВ — высокочувствительный инструмент.' });
+    }
+    notes.push({ cls: 'note-info', icon: '💊', text: 'Менин-ингибиторы (ревумениб) показали эффективность при рецидивах NPM1-мутированного ОМЛ. Диагноз правомерен при любом числе бластов.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── CEBPA bZIP ──────────────────────────────
+  if (state.cebpaBzip) {
+    who2022 = `ОМЛ с мутацией CEBPA в bZIP-домене${therapyQual}`;
+    icc2022 = `AML with in-frame bZIP mutated CEBPA${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Благоприятная (ELN 2022)';
+    notes.push({ cls: 'note-success', icon: '✅', text: 'WHO 2022: только bZIP-домен CEBPA является определяющей аномалией (в отличие от ICC, где — биаллельная CEBPA). Диагноз правомерен при любом числе бластов.' });
+    notes.push({ cls: 'note-info', icon: '🔬', text: 'Исключить герминальную мутацию CEBPA (семейный ОМЛ) — особенно при молодом возрасте и отягощённом семейном анамнезе.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ── Germline DDX41 ──────────────────────────
+  if (state.germDDX41) {
+    who2022 = `ОМЛ с герминальной мутацией DDX41${therapyQual}`;
+    icc2022 = `AML with DDX41 mutation${therapyQual ? ' (therapy-related)' : ''}`;
+    category = 'genetic'; icon = '🧬';
+    progGroup = 'Промежуточная–благоприятная; позднее начало (50–70 лет)';
+    notes.push({ cls: 'note-info', icon: '🧬', text: 'DDX41-мутированный ОМЛ — отдельная категория в WHO 2022. Преимущественно у мужчин 50–70 лет. Часто 2-я соматическая мутация DDX41. Семейный анализ.' });
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ─────────────────────────────────────────────
+  // AML-MR: мелодисплазия-ассоциированный
+  // ─────────────────────────────────────────────
+  const mdsCyto = state.complexKaryo || state.del5q || state.mono7_del7q ||
+                  state.del11q || state.del12p || state.del13q || state.del17p ||
+                  state.iso17q || state.idicXq13;
+
+  const mdsMut = state.mut_SRSF2 || state.mut_SF3B1 || state.mut_U2AF1 || state.mut_ZRSR2 ||
+                 state.mut_ASXL1 || state.mut_EZH2 || state.mut_BCOR || state.mut_STAG2 || state.mut_RUNX1;
+
+  const priorMDS = state.deNovo === 'secondary';
+
+  if (priorMDS || mdsCyto || mdsMut) {
+    who2022 = `ОМЛ, связанный с МДС (AML-MR)${therapyQual}`;
+
+    // Build ICC criteria
+    let iccCriteria = [];
+    if (priorMDS) iccCriteria.push('предшествующий МДС/МДС/МПН');
+    if (mdsCyto) iccCriteria.push('МДС-ассоциированная цитогенетика');
+    if (mdsMut) {
+      const muts = ['SRSF2','SF3B1','U2AF1','ZRSR2','ASXL1','EZH2','BCOR','STAG2','RUNX1']
+        .filter(m => state['mut_' + m]);
+      iccCriteria.push('мутации: ' + muts.join(', '));
+    }
+    icc2022 = `AML, myelodysplasia-related (${iccCriteria.join('; ')})${therapyQual ? ' (therapy-related)' : ''}`;
+
+    category = 'mds'; icon = '🔴';
+    progGroup = 'Промежуточная–неблагоприятная (ELN 2022)';
+
+    if (priorMDS) notes.push({ cls: 'note-warn', icon: '📋', text: 'Трансформация из МДС/МДС/МПН: квалификатор «вторичный». В ICC 2022 — отдельный диагностический критерий AML-MR.' });
+    if (state.complexKaryo) notes.push({ cls: 'note-warn', icon: '🔬', text: 'Сложный кариотип (≥3 аномалий): нередко с TP53-мутацией. Неблагоприятный прогноз. Рассмотреть алло-ТГСК в ремиссии.' });
+    if (state.del5q || state.del17p || state.mono7_del7q) notes.push({ cls: 'note-warn', icon: '⚠️', text: 'МДС-ассоциированные цитогенетические аномалии высокого риска (−7/del7q, del5q, del17p) → неблагоприятный прогноз.' });
+    if (mdsMut) {
+      const muts = ['SRSF2','SF3B1','U2AF1','ZRSR2','ASXL1','EZH2','BCOR','STAG2','RUNX1']
+        .filter(m => state['mut_' + m]).join(', ');
+      notes.push({ cls: 'note-info', icon: '🧪', text: `МДС-ассоциированные мутации: ${muts}. Исключить герминальное происхождение (особенно RUNX1, GATA2).` });
+    }
+    if (state.tp53) {
+      progGroup = 'Неблагоприятная (ELN 2022) — TP53-мутированный';
+      notes.push({ cls: 'note-warn', icon: '⚠️', text: 'TP53-мутированный ОМЛ: деценитабин/цедазуридин или venetoclax-содержащие схемы. Ответ на стандартную ХТ низкий.' });
+    }
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // ─────────────────────────────────────────────
+  // AML NOS
+  // ─────────────────────────────────────────────
+  const fabLabels = {
+    M0: 'ОМЛ с минимальной дифференцировкой',
+    M1: 'ОМЛ без созревания',
+    M2: 'ОМЛ с созреванием',
+    M4: 'Острый миеломоноцитарный лейкоз',
+    M4eo: 'Острый миеломоноцитарный лейкоз с эозинофилией',
+    M5a: 'Острый монобластный лейкоз',
+    M5b: 'Острый моноцитарный лейкоз',
+    M6_erythroid: 'Чистый эритроидный лейкоз',
+    M7: 'Острый мегакариобластный лейкоз',
+    M_baso: 'Острый базофильный лейкоз',
+    M_pan: 'Острый панмиелоз с миелофиброзом',
+    sarcoma: 'Миелоидная саркома'
+  };
+
+  const fabICC = {
+    M0: 'AML, NOS — with minimal differentiation',
+    M1: 'AML, NOS — without maturation',
+    M2: 'AML, NOS — with maturation',
+    M4: 'AML, NOS — myelomonocytic',
+    M4eo: 'AML, NOS — myelomonocytic with eosinophilia',
+    M5a: 'AML, NOS — monoblastic/monocytic',
+    M5b: 'AML, NOS — monoblastic/monocytic',
+    M6_erythroid: 'AML, NOS — pure erythroid leukaemia',
+    M7: 'AML, NOS — megakaryoblastic',
+    M_baso: 'AML, NOS — basophilic',
+    M_pan: 'Acute panmyelosis with myelofibrosis',
+    sarcoma: 'Myeloid sarcoma'
+  };
+
+  const fab = state.fabVariant;
+  if (fab && fab !== '') {
+    const label = fabLabels[fab] || 'ОМЛ БДУ';
+    who2022 = `${label}${therapyQual}`;
+    icc2022 = `${fabICC[fab] || 'AML, NOS'}${therapyQual ? ' (therapy-related)' : ''}`;
+    progGroup = fab === 'M0' || fab === 'M7' ? 'Неблагоприятная' :
+                (fab === 'M5a' || fab === 'M5b' || fab === 'M4') ? 'Промежуточная' : 'Промежуточная';
+
+    if (fab === 'M6_erythroid') {
+      notes.push({ cls: 'note-info', icon: '🔬', text: 'Чистый эритроидный лейкоз: ≥80% эритроидных клеток, ≥30% проэритробластов от всех ядросодержащих клеток КМ. Исключить B-лимфобластный лейкоз с эритроидной метаплазией.' });
+    }
+    if (fab === 'M7') {
+      notes.push({ cls: 'note-info', icon: '🔬', text: 'Мегакариобластный ОМЛ: CD41+, CD61+, CD42b+. Исключить t(1;22)/RBM15::MRTFA, синдром Дауна. Трепанобиопсия — ретикулиновый фиброз.' });
+    }
+    if (fab === 'M_pan') {
+      notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Острый панмиелоз с миелофиброзом: тяжёлая депрессия кроветворения, миелофиброз, панцитопения. Дифференциальная диагностика с МДС/МПН и ПМИФ сложна.' });
+    }
+    if (fab === 'sarcoma') {
+      notes.push({ cls: 'note-info', icon: '🏥', text: 'Миелоидная саркома: требует полного молекулярно-генетического исследования. Лечение — как системный ОМЛ; локальная лучевая терапия — по показаниям.' });
+    }
+    category = 'nos'; icon = '🩸';
+    finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+    return;
+  }
+
+  // Fallback NOS
+  who2022 = `ОМЛ без дополнительного уточнения (ОМЛ БДУ)${therapyQual}`;
+  icc2022 = `AML, NOS${therapyQual ? ' (therapy-related)' : ''}`;
+  category = 'nos'; icon = '🩸';
+  progGroup = 'Промежуточная (требует уточнения)';
+  notes.push({ cls: 'note-warn', icon: '⚠️', text: 'Диагноз «ОМЛ БДУ» требует дополнительного уточнения. Необходимо полное иммунофенотипирование, цитохимия и панель молекулярной генетики.' });
+  finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup });
+}
+
+// ─────────────────────────────────────────────────────────
+// FINALIZE — render result
+// ─────────────────────────────────────────────────────────
+function finalize({ who2022, icc2022, category, icon, qualifiers, notes, progGroup, isAPL }) {
+  const maxBlasts = Math.max(state.blastsBM || 0, state.blastsPB || 0);
+  const therapyQual = state.deNovo === 'therapy' ? ', связанный с терапией' : '';
+
+  // Blast check
+  const geneticDiagnosis = state.pmlRara || state.raraVariant || state.runx1t1 || state.cbfbMyh11 ||
+    state.npm1mut || state.cebpaBzip || state.bcrAbl || state.kmt2a_mllt3 || state.kmt2aOther ||
+    state.mecom || state.nup98 || state.dekNup214 || state.rbm15 || state.etv6mnx1 ||
+    state.picalmMllt10 || state.npm1mlf1 || state.germDDX41;
+
+  if (maxBlasts < 20 && !geneticDiagnosis) {
+    notes.unshift({ cls: 'note-warn', icon: '⚠️', text: `Число бластов (${maxBlasts}%) ниже порогового значения ≥20% для диагноза ОМЛ без определяющей генетической аномалии. Пересмотрите подсчёт бластов или исключите МДС высокого риска.` });
+  }
+  if (maxBlasts < 10 && geneticDiagnosis) {
+    notes.unshift({ cls: 'note-warn', icon: '⚠️', text: `Число бластов (${maxBlasts}%) менее 10%. При наличии определяющей генетической аномалии диагноз ОМЛ правомерен при ≥10% бластов.` });
+  }
+  if (maxBlasts >= 10 && maxBlasts < 20 && geneticDiagnosis) {
+    notes.unshift({ cls: 'note-info', icon: 'ℹ️', text: `Число бластов ${maxBlasts}% (10–19%). Диагноз ОМЛ правомерен при наличии определяющей генетической аномалии даже без порога ≥20%.` });
+  }
+
+  // Build full formulation
+  const blastInfo = maxBlasts > 0 ? ` (бласты: КМ ${state.blastsBM}%, ПК ${state.blastsPB}%)` : '';
+  const germNote  = state.germline ? '; на фоне герминальной предрасположенности' : '';
+  const germDDX41Note = state.germDDX41 ? '; герминальная мутация DDX41' : '';
+  const fullText  = `${who2022}${blastInfo}${germNote}${germDDX41Note}`;
+
+  // Category titles
+  const catTitles = {
+    apl: 'ОМЛ с определяющей генетической аномалией — APL',
+    cbf: 'ОМЛ с определяющей генетической аномалией — CBF-ОМЛ',
+    genetic: 'ОМЛ с определяющей генетической аномалией',
+    mds: 'ОМЛ, связанный с МДС (AML-MR)',
+    nos: 'ОМЛ без дополнительного уточнения (AML NOS)',
+  };
+
+  // Render
+  document.getElementById('result-icon').textContent = icon;
+  document.getElementById('result-category').textContent = catTitles[category] || 'Диагноз';
+  document.getElementById('result-title').textContent = who2022;
+  document.getElementById('who-text').textContent = who2022;
+  document.getElementById('icc-text').textContent = icc2022;
+  document.getElementById('full-text').textContent = fullText;
+  document.getElementById('prognosis-text').textContent = progGroup || '—';
+
+  // APL alert
+  document.getElementById('apl-alert').style.display = isAPL ? 'flex' : 'none';
+
+  // Qualifiers
+  const qRow = document.getElementById('qualifiers-row');
+  qRow.innerHTML = qualifiers.map(q => `<span class="qual-tag ${q.cls}">${q.label}</span>`).join('');
+
+  // Card class
+  const rc = document.getElementById('result-card');
+  rc.className = `result-card result-${category}`;
+
+  // Notes
+  const nl = document.getElementById('notes-list');
+  nl.innerHTML = notes.map(n => `<li class="${n.cls}"><span class="note-icon">${n.icon}</span><span>${n.text}</span></li>`).join('');
+
+  // Show result, hide form
+  document.getElementById('form-section').style.display = 'none';
+  const rs = document.getElementById('result-section');
+  rs.classList.add('show');
+  rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────
+function backToForm() {
+  document.getElementById('result-section').classList.remove('show');
+  document.getElementById('form-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetForm() {
+  if (!confirm('Сбросить все введённые данные?')) return;
+  // Uncheck all checkboxes
+  document.querySelectorAll('.cb-item input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.cb-item').classList.remove('checked', 'checked-red', 'checked-orange');
+    if (cb.dataset.id) state[cb.dataset.id] = false;
+  });
+  // Reset selects and inputs
+  document.getElementById('blasts_bm').value = '';
+  document.getElementById('blasts_pb').value = '';
+  document.getElementById('age').value = '';
+  document.getElementById('de_novo').value = '';
+  document.getElementById('fab_variant').value = '';
+  document.getElementById('prior_diag').value = '';
+  document.getElementById('therapy-block').style.display   = 'none';
+  document.getElementById('secondary-block').style.display = 'none';
+  backToForm();
+}
+
+function copyDiagnosis() {
+  const text = document.getElementById('full-text').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = '✅ Скопировано!';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+</script>
+
+</body>
+</html>
